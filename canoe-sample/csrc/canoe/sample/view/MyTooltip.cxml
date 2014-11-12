@@ -1,0 +1,1 @@
+<components:Tooltip xmlns:core="canoe.core" xmlns:components="canoe.components" xmlns:layout="canoe.layout">  <core:Text text="hello,world"/></components:Tooltip>

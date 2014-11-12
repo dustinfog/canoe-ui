@@ -1,0 +1,1 @@
+<components:Skin xmlns:components="canoe.components">  <components:DataGroup id="dataGroup" left="1" top="1" bottom="0" right="0" itemRenderer="@Class(canoe.sample.skin.TabBarItemRenderer)"/></components:Skin>

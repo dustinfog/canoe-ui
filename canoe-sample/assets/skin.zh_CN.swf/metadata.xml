@@ -1,0 +1,22 @@
+<metadata>
+	<global  />
+	<symbol name="Button" scale9Grid="2,2,62,16" sliceRows="3"/>
+	<symbol name="Window.background" scale9Grid="15,15,140,90" />
+	<symbol name="Window.closeButton" sliceRows="3"/>
+	<symbol name="CheckBox" sliceRows="3" sliceCols="2" />
+	<symbol name="Button_lock" sliceRows="3" sliceCols="2" />
+	<symbol name="RadioButton" sliceRows="3" sliceCols="2" />
+	<symbol name="DropDownList.button" scale9Grid="1,1,49,18" sliceRows="3" />
+	<symbol name="Tooltip" scale9Grid="2,2,33,16" />
+	<symbol name="HSlider.track" scale9Grid="1,1,25,2" />
+	<symbol name="HSlider.thumb" sliceRows="3" />
+	<symbol name="TabBar" scale9Grid="3,4,4,17"  sliceRows="3" />
+	<symbol name="HScrollBar.decreaseButton" sliceRows="3"/>
+	<symbol name="HScrollBar.increaseButton" sliceRows="3"/>
+	<symbol name="HScrollBar.thumb" scale9Grid="5,9,7,2" sliceRows="3"/>
+	<symbol name="HScrollBar.track" scale9Grid="5,8,1,1" sliceRows="3" />
+	<symbol name="VScrollBar.decreaseButton" sliceRows="3"/>
+	<symbol name="VScrollBar.increaseButton" sliceRows="3"/>
+	<symbol name="VScrollBar.thumb" scale9Grid="8,5,2,7" sliceRows="3"/>
+	<symbol name="VScrollBar.track" scale9Grid="8,5,1,1" sliceRows="3" />
+</metadata>

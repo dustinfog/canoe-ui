@@ -1,0 +1,1 @@
+<components:Skin xmlns:components="canoe.components" xmlns:state="canoe.state">  <states>    <state:State name="normal"/>    <state:State name="hover"/>    <state:State name="down"/>    <state:State name="disabled"/>  </states>  <components:AssetImage id="image" uri="skin#HScrollBar.thumb" left="0" right="0" sliceY="0" sliceY.hover="1" sliceY.down="2"/></components:Skin>
