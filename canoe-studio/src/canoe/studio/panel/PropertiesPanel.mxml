@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 >
+	<s:layout>
+		<s:VerticalLayout />
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import spark.components.CheckBox;
+			import spark.components.Group;
+			import spark.components.Label;
+			import spark.components.TextInput;
+			import spark.layouts.HorizontalLayout;
+			
+			import canoe.studio.editor.DnRController;
+			import canoe.studio.editor.DnRSource;
+			import canoe.studio.editor.UIEditor;
+			import canoe.studio.editor.props.BooleanEditor;
+			import canoe.studio.editor.props.IPropertyEditor;
+			import canoe.studio.editor.props.SimpleEditor;
+			import canoe.util.reflect.Accessor;
+			import canoe.util.reflect.ClassReflector;
+			import canoe.util.reflect.Member;
+			
+			private var _selectedCtrlr : DnRController;
+
+			public function get selectedCtrlr():DnRController
+			{
+				return _selectedCtrlr;
+			}
+
+			public function set selectedCtrlr(value:DnRController):void
+			{
+				_selectedCtrlr = value;
+				fetchProperties();
+			}
+			
+			private function fetchProperties() : void
+			{
+				removeAllElements();
+				
+				if(selectedCtrlr == null) return;
+
+				var source : DnRSource = selectedCtrlr.source;
+				var display : DisplayObject = source.display;
+				
+				var props : Array = [];
+				var reflector : ClassReflector = ClassReflector.reflect(display);
+				var members : Array = reflector.members;
+				for each(var member : Member in members)
+				{
+					if(member is Accessor && member.getMetadatasByName("Editable").length > 0)	
+					{
+						props.push(member);
+						
+						var accessor : Accessor = Accessor(member);
+						var editor : IPropertyEditor;
+						if(accessor.type == Boolean)
+						{
+							editor = new BooleanEditor();
+						}
+						else
+						{
+							editor = new SimpleEditor();
+						}
+						
+						editor.propName = accessor.name;
+						editor.value = source.xml["@" + editor.propName];
+						addElement(editor);
+					}
+				}	
+			}
+		]]>
+	</fx:Script>
+	<fx:Binding source="{UIEditor(Main.instance.nav.selectedChild).designer.selectedCtrlr}" destination="selectedCtrlr"/>
+</s:Group>

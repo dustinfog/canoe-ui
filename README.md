@@ -1,4 +1,0 @@
-canoe-ui
-========
-
-flash framework

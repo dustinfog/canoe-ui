@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:CheckBox xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			xmlns:s="library://ns.adobe.com/flex/spark" 
+			xmlns:mx="library://ns.adobe.com/flex/mx"
+			implements="canoe.studio.editor.props.IPropertyEditor"
+			>
+	<fx:Script>
+		<![CDATA[
+			
+			public function set propName(v : String) : void
+			{
+				label = v;
+			}
+			
+			public function get propName() : String
+			{
+				return label;
+			}
+			
+			public function set value(v : *) : void
+			{
+				selected = v;
+			}
+
+			public function get value() : *
+			{
+				return selected;
+			}
+		]]>
+	</fx:Script>
+</s:CheckBox>

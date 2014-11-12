@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:NavigatorContent xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:mx="library://ns.adobe.com/flex/mx" label="组件库"
+					>
+	<fx:Script>
+		<![CDATA[
+			import mx.core.DragSource;
+			import mx.core.UIComponent;
+			import mx.events.DragEvent;
+			import mx.managers.DragManager;
+			
+			import canoe.components.AssetImage;
+			import canoe.components.Button;
+			import canoe.components.CheckBox;
+			import canoe.components.Container;
+			import canoe.components.DataGroup;
+			import canoe.components.DropDownList;
+			import canoe.components.HScrollBar;
+			import canoe.components.HSlider;
+			import canoe.components.List;
+			import canoe.components.NumericStepper;
+			import canoe.components.Paginator;
+			import canoe.components.RadioButton;
+			import canoe.components.RadioButtonGroup;
+			import canoe.components.TabBar;
+			import canoe.components.TextArea;
+			import canoe.components.TextInput;
+			import canoe.components.VScrollBar;
+			import canoe.components.ViewStack;
+			import canoe.core.Text;
+			[Bindable]
+			private var comps : Array= [
+				Text,
+				AssetImage,
+				Button,
+				CheckBox,
+				Container,
+				DataGroup,
+				DropDownList,
+				HScrollBar,
+				HSlider,
+				canoe.components.List,
+				NumericStepper,
+				Paginator,
+				RadioButton,
+				RadioButtonGroup,
+				TabBar,
+				TextArea,
+				TextInput,
+				ViewStack,
+				VScrollBar
+			];
+			
+			protected function list_dragStartHandler(event:DragEvent):void
+			{
+				event.preventDefault();
+
+				var dragSource : DragSource = new DragSource();
+				dragSource.addData(list.selectedItem, "comp");
+				DragManager.doDrag(event.dragInitiator, dragSource, event, new UIComponent());
+			}
+			
+		]]>
+	</fx:Script>
+	<s:List id="list" width="100%" height="100%" dragEnabled="true"  dragStart="list_dragStartHandler(event)" >
+		<s:dataProvider>
+			<s:ArrayCollection source="{comps}" />
+		</s:dataProvider>
+		<s:itemRenderer>
+			<fx:Component>
+				<s:ItemRenderer>
+					<s:layout>
+						<s:HorizontalLayout paddingLeft="5" paddingRight="5" paddingTop="3" paddingBottom="3" verticalAlign="middle" />
+					</s:layout>
+					<fx:Script>
+						<![CDATA[
+							import canoe.studio.library.Icons;
+							import avmplus.getQualifiedClassName;
+							[Bindable]
+							private var icon : Class;
+							
+							[Bindable]
+							private var compName : String;
+							
+							override public function set data(value:Object):void
+							{
+								var clazz : Class = value as Class;
+								
+								compName = getQualifiedClassName(clazz).split("::")[1];
+								icon = Icons[compName];
+								
+								super.data = value;
+							}
+						]]>
+					</fx:Script>
+					<s:Image source="{icon}" />
+					<s:Label text="{compName}" />
+				</s:ItemRenderer>
+			</fx:Component>
+		</s:itemRenderer>
+	</s:List>
+</s:NavigatorContent>

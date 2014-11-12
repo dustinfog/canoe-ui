@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 implements="canoe.studio.editor.props.IPropertyEditor">
+	<s:layout>
+		<s:HorizontalLayout />
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			private var _name : String;
+			private var _value : *;
+			public function set propName(v : String) : void
+			{
+				_name = v;
+			}
+			
+			[Bindable]
+			public function get propName() : String
+			{
+				return _name;
+			}
+			
+			public function set value(v : *) : void
+			{
+				_value = v;
+			}
+			
+			[Bindable]
+			public function get value() : *
+			{
+				return _value;
+			}
+		]]>
+	</fx:Script>
+	<s:Label text="{propName}" />
+	<s:TextInput text="{value}" />
+</s:Group>

@@ -1,0 +1,34 @@
+<project>
+	<path>
+		<sourcePath value="src" />
+		<cxmlPath value="csrc" />
+		<swapPath value=".csrc" />
+		<assetPath value="assets" />
+		<binaryPath value="bin-debug" />
+		<libPath value="lib" />
+		<locale value="zh_CN" />
+	</path>
+	<skins>
+		<skin class="canoe.skin.ButtonSkin" for="canoe.components.Button" default="true" />
+		<skin class="canoe.skin.ToggleButtonSkin" for="canoe.components.ToggleButton" default="true" />
+		<skin class="canoe.skin.TextInputSkin" for="canoe.components.TextInput"  default="true"/>
+		<skin class="canoe.skin.VScrollBarSkin" for="canoe.components.VScrollBar" default="true"/>
+		<skin class="canoe.skin.HScrollBarSkin" for="canoe.components.HScrollBar"  default="true"/>
+		<skin class="canoe.skin.TextAreaSkin" for="canoe.components.TextArea" default="true" />
+		<skin class="canoe.skin.ListSkin" for="canoe.components.List" default="true" />
+		<skin class="canoe.skin.DropDownListSkin" for="canoe.components.DropDownList" default="true" />
+		<skin class="canoe.skin.TabBarSkin" for="canoe.components.TabBar" default="true" />
+		<skin class="canoe.skin.HSliderSkin" for="canoe.components.HSlider" default="true" />
+		<skin class="canoe.skin.CheckBoxSkin" for="canoe.components.CheckBox" default="true" />
+		<skin class="canoe.skin.RadioButtonSkin" for="canoe.components.RadioButton" default="true" />
+		<skin class="canoe.skin.WindowSkin" for="canoe.components.Window" default="true" />
+		<skin class="canoe.skin.AlertSkin" for="canoe.components.Alert" default="true" />
+		<skin class="canoe.skin.TooltipSkin" for="canoe.components.Tooltip" default="true" />
+		<skin class="canoe.skin.NumericStepperSkin" for="canoe.components.NumericStepper" default="true" />
+		<skin class="canoe.skin.PaginatorSkin" for="canoe.components.Paginator" default="true" />
+	</skins>
+	<styleSheets>
+		<!-- 相对于 canoeSourcePath -->
+		<styleSheet file="style.css" />
+	</styleSheets>
+</project>

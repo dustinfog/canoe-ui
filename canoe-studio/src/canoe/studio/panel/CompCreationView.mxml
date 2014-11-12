@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extensions:Dialog xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				   xmlns:s="library://ns.adobe.com/flex/spark" 
+				   xmlns:mx="library://ns.adobe.com/flex/mx"
+				   xmlns:extensions="canoe.studio.extensions.*"
+				   width="400" height="200" title="新建组件" xmlns:entity="canoe.studio.entity.*">
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			
+			import canoe.studio.entity.BaseComponent;
+			import canoe.studio.entity.Project;
+			import canoe.studio.extensions.CXMLClass;
+			import canoe.studio.util.ClassUtil;
+			import canoe.studio.util.FileUtil;
+			import canoe.studio.util.XMLUtil;
+			import canoe.util.StringUtil;
+			override public function open(modal : Boolean = false):void
+			{
+				super.open(modal);
+
+				var relativeFile : File = ResourcePanel.instance.srcTree.selectedItem as File;
+				if(relativeFile != null)
+				{
+					if(!relativeFile.isDirectory)
+					{
+						relativeFile = relativeFile.parent;
+					}
+					
+					packageInput.text = CXMLClass.dirToPackageName(relativeFile);
+				}
+			}
+			
+			protected function createComp():void
+			{
+				var xml : XML = <root xmlns:core="canoe.core" xmlns:components="canoe.components" xmlns:state="canoe.state" xmlns:layout="canoe.layout" >
+				<!-- 这里是内容 -->
+				</root>;
+				
+				var baseClassName : String = BaseComponent(baseList.selectedItem).className || baseInput.text;
+				
+				if(StringUtil.trim(baseClassName).length == 0)
+				{
+					Alert.show("基于的类名不能为空！");
+				}
+				else
+				{
+					xml.setName(ClassUtil.getLocalName(baseClassName));
+					XMLUtil.setNamespace(xml, ClassUtil.getNamespace(baseClassName));
+					
+					var distFile : File = CXMLClass.classNameToFile(packageInput.text + "." + nameInput.text);
+					if(distFile.exists)
+					{
+						Alert.show("该类已经存在！");
+					}
+					else
+					{
+						distFile.parent.createDirectory();
+						FileUtil.writeFileContent(distFile, xml.toXMLString());
+						Project.currProject.compileCXML();
+						
+						var srcPanel : ResourcePanel = ResourcePanel.instance;
+						srcPanel.srcTree.refresh();
+						srcPanel.srcTree.selectedItem = srcPanel.srcTree.findItem(distFile.nativePath);
+						Main.instance.nav.openFile(distFile);
+						close();
+					}
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<extensions:layout>
+		<s:VerticalLayout paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10" horizontalAlign="center" />
+	</extensions:layout>
+	<s:HGroup width="100%">
+		<s:Label text="包:" width="50" /> <s:TextInput id="packageInput" width="200"/>
+	</s:HGroup>
+	<s:HGroup width="100%">
+		<s:Label text="名称:" width="50" /> <s:TextInput id="nameInput" width="200"/>
+	</s:HGroup>
+	<s:HGroup width="100%">
+		<s:Label text="基于:" width="50" />
+		<s:DropDownList id="baseList" requireSelection="true">
+			<s:ArrayCollection>
+				<fx:Array>
+					<entity:BaseComponent name="容器" className="canoe.components.Container" />
+					<entity:BaseComponent name="窗口" className="canoe.components.Window" />
+					<entity:BaseComponent name="皮肤" className="canoe.components.Skin" />
+					<entity:BaseComponent name="项呈示器" className="canoe.components.ItemRenderer" />
+					<entity:BaseComponent name="工具提示" className="canoe.components.Tooltip" />
+					<entity:BaseComponent name="其他" />
+				</fx:Array>
+			</s:ArrayCollection>	
+		</s:DropDownList>
+		<s:TextInput id="baseInput" visible="{BaseComponent(baseList.selectedItem).className == null}"/>
+	</s:HGroup>
+	<s:HGroup>
+		<s:Button label="确定" click="createComp()" />
+		<s:Button label="取消" click="close()" />
+	</s:HGroup>
+</extensions:Dialog>

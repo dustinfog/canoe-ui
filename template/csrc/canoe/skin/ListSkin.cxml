@@ -1,0 +1,1 @@
+<components:Skin borderColor="0xafafaf" borderWidth="1" borderAlpha="1" backgroundColor="0xffffff" backgroundAlpha="1" xmlns:skin="canoe.skin" xmlns:components="canoe.components">  <components:DataGroup id="dataGroup" clipAndScroll="@true" left="1" top="1" bottom="0" right="0"/>  <components:VScrollBar id="vScrollBar" right="0" bottom="0" top="1"/></components:Skin>

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:NavigatorContent label="包资源管理器" xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:mx="library://ns.adobe.com/flex/mx" creationComplete="creationCompleteHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.treeClasses.TreeItemRenderer;
+			import mx.core.DragSource;
+			import mx.core.UIComponent;
+			import mx.events.DragEvent;
+			import mx.events.FlexEvent;
+			import mx.events.FlexNativeMenuEvent;
+			import mx.events.ListEvent;
+			import mx.managers.DragManager;
+			
+			import canoe.studio.extensions.CXMLClass;
+			
+			private static var _instance : ResourcePanel;
+			public static function get instance() : ResourcePanel
+			{
+				return _instance;	
+			}
+			[Bindable]
+			public var srcDirectory : File;
+
+			protected function srcTree_itemDoubleClickHandler(event:ListEvent):void
+			{
+				var selectedFile : File = File(srcTree.selectedItem);
+				if(!selectedFile.isDirectory)
+					Main.instance.nav.openFile(selectedFile);
+			}
+			
+			protected function srcTree_contextMenuHandler(event:MouseEvent):void
+			{
+				var tmp : DisplayObject = event.target as DisplayObject;
+				while(srcTree.contains(tmp))
+				{
+					if(tmp is TreeItemRenderer)
+					{
+						srcTree.selectedItem = TreeItemRenderer(tmp).data;
+						break;
+					}
+					
+					tmp = tmp.parent;
+				}				
+			}
+			
+			protected function treeMenu_itemClickHandler(event:FlexNativeMenuEvent):void
+			{
+				
+			}
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				_instance = this;
+			}
+			
+			protected function srcTree_dragStartHandler(event:DragEvent):void
+			{
+				event.preventDefault();
+				if(File(srcTree.selectedItem).isDirectory) return;
+				
+				var className : String = CXMLClass.fileToClassName(File(srcTree.selectedItem));
+				
+				var dragSource : DragSource = new DragSource();
+				dragSource.addData(className, "cxml");
+				DragManager.doDrag(event.dragInitiator, dragSource, event, new UIComponent());
+			}
+		]]>
+	</fx:Script>
+	<mx:FileSystemTree id="srcTree" width="100%" height="100%"
+					   directory="{srcDirectory}" horizontalScrollPolicy="on"
+					   itemDoubleClick="srcTree_itemDoubleClickHandler(event)"
+					   verticalScrollPolicy="on" contextMenu="srcTree_contextMenuHandler(event)"
+					   dragEnabled="true" dragStart="srcTree_dragStartHandler(event)" 
+					   >
+		<mx:flexContextMenu>
+			<mx:FlexNativeMenu labelField="@label" itemClick="treeMenu_itemClickHandler(event)" >
+				<mx:dataProvider>
+					<fx:XMLList>
+						<item label="编辑" />
+						<item label="复制" />
+						<item label="粘贴" enabled="false" />
+						<item label="删除" />
+						<item label="移动" />
+						<item label="重命名" />
+					</fx:XMLList>
+				</mx:dataProvider>
+			</mx:FlexNativeMenu>
+		</mx:flexContextMenu>
+		<mx:extensions>
+			<fx:Array>
+				<fx:String>.cxml</fx:String>
+			</fx:Array>
+		</mx:extensions>
+	</mx:FileSystemTree>
+</s:NavigatorContent>

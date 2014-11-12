@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TabNavigator xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				 xmlns:s="library://ns.adobe.com/flex/spark" 
+				 xmlns:mx="library://ns.adobe.com/flex/mx"
+				 width="400" height="300"
+				 creationComplete="creationCompleteHandler(event)"
+				 change="updateOutline()"
+				 >
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.tabBarClasses.Tab;
+			import mx.events.FlexEvent;
+			import mx.events.FlexNativeMenuEvent;
+			import mx.events.IndexChangedEvent;
+			
+			import canoe.studio.panel.OutlinePanel;
+			
+			override protected function keyDownHandler(event:KeyboardEvent):void
+			{
+			}
+			public function isDesign():Boolean{
+				if(!this.selectedChild)return false;
+				return UIEditor(selectedChild).tabbar.selectedIndex==1;
+			}
+			public function saveSelected() : void
+			{
+				var selectedEditor : UIEditor = UIEditor(selectedChild);
+				if(selectedEditor)
+				{
+					selectedEditor.save();
+				}
+			}
+			
+			public function closeSelected() : void
+			{
+				if(selectedChild)
+				{
+					UIEditor(selectedChild).close(updateOutline);
+				}
+			}
+			
+			public function closeOthers() : void
+			{
+				var others : Array = [];
+
+				for(var i : uint = 0; i < numElements; i ++)
+				{
+					if(selectedIndex != i)
+					{
+						others.push(getElementAt(i));
+					}
+				}
+				
+				multiClose(others);
+			}
+			
+			public function closeAll(callback : Function = null) : void
+			{
+				var editors : Array = [];
+				
+				for(var i : uint = 0; i < numElements; i ++)
+				{
+					editors.push(getElementAt(i));
+				}
+				
+				multiClose(editors, callback);
+			}
+			
+			public function openFile(file : File) : void
+			{
+				var editor : UIEditor;
+				for(var i : uint = 0; i < numElements; i ++)
+				{
+					var uiEditor : UIEditor = UIEditor(getElementAt(i));
+					if(uiEditor.uiFile == file)
+					{
+						editor = uiEditor;
+						break;
+					}
+				}
+				
+				if(editor == null)
+				{
+					editor = new UIEditor();
+					editor.uiFile = file;
+					addElement(editor);
+				}
+				
+				selectedChild = editor;
+			}
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				tabBar.flexContextMenu = tabMenu;
+				tabBar.addEventListener(MouseEvent.CONTEXT_MENU, tabBar_contextMenuHandler);
+			}
+			
+			protected function tabBar_contextMenuHandler(event:MouseEvent):void
+			{
+				if(event.target is Tab)
+				{
+					tabBar.selectedIndex = tabBar.getChildIndex(event.target as Tab);
+				}
+			}
+			
+			protected function tabMenu_itemClickHandler(event:FlexNativeMenuEvent):void
+			{
+				var commandName : String = event.item.@command;
+				if(!commandName) return;
+				
+				var command : Function = this[commandName];
+				
+				if(command != null)
+				{
+					command();
+				}
+			}
+			
+			private function multiClose(editors : Array, callback : Function = null) : void
+			{
+				if(editors.length == 0) return;
+
+				var actualCallback : Function;
+				if(editors.length > 1)
+				{
+					actualCallback = function() : void
+					{
+						multiClose(editors, callback);
+					}
+				}
+				else
+				{
+					actualCallback = function() : void
+					{
+						if(callback != null)
+							callback();
+						updateOutline();
+					}
+				}
+				
+				UIEditor(editors.shift()).close(actualCallback);
+			}
+			
+			private function updateOutline() : void
+			{
+				var editor : UIEditor = UIEditor(selectedChild);
+				
+				OutlinePanel.instance.rootDnRContrller = editor ? editor.rootDnRController : null;
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mx:FlexNativeMenu id="tabMenu" labelField="@label" itemClick="tabMenu_itemClickHandler(event)" >
+			<mx:dataProvider>
+				<fx:XMLList>
+					<item label="关闭" command="closeSelected" />
+					<item label="关闭其他" command="closeOthers" />
+					<item label="全部关闭" command="closeAll"/>
+				</fx:XMLList>
+			</mx:dataProvider>
+		</mx:FlexNativeMenu>
+	</fx:Declarations>
+</mx:TabNavigator>

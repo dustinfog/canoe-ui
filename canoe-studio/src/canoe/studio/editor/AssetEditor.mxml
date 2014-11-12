@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<e:Dialog xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  xmlns:s="library://ns.adobe.com/flex/spark"
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  xmlns:e="canoe.studio.extensions.*"
+		  title="素材属性" width="100%">
+	<fx:Script>
+		<![CDATA[
+			import canoe.asset.SymbolMeta;
+			private var data:Object
+			public function init(data:SymbolMeta):void{
+				if(!data)return;
+				this.data=data;
+				//this.tfQuality.text=data.
+				if(data.sliceRows)this.tfSliceRows.text=data.sliceRows.toString();
+				if(data.sliceCols)this.tfSliceCols.text=data.sliceCols.toString();
+				if(data.corePoint)this.tfCorePoint.text=data.corePoint.x+","+data.corePoint.y;
+				if(data.scale9Grid)this.tfScale9Grid.text=data.scale9Grid.x+","+data.scale9Grid.y+","+data.scale9Grid.width+","+data.scale9Grid.height;
+				
+				
+			}
+			private function onButtonClick(evt:MouseEvent):void{
+				var button:Button=evt.target as Button;
+				if(!button)return;
+				if(button.name=="btOK"){
+					
+				}else{
+					this.parent.removeChild(this);
+				}
+			}
+		]]>
+	</fx:Script>
+	<s:BorderContainer>
+		<s:layout>
+			<s:VerticalLayout  horizontalAlign="center" paddingLeft="5" paddingRight="5" paddingTop="5" paddingBottom="5" />
+		</s:layout>
+		<s:BorderContainer>
+			<s:layout>
+				<s:HorizontalLayout horizontalAlign="center" paddingLeft="5" paddingRight="5" paddingTop="5" paddingBottom="5" />
+			</s:layout>
+			<s:VGroup>
+				<mx:Text text="scale9Grid :"/>
+				<mx:Text text="quality :"/>
+				<mx:Text text="corePoint :"/>
+				<mx:Text text="sliceRows :"/>
+				<mx:Text text="sliceCols :"/>
+			</s:VGroup>
+			<s:VGroup>
+				<mx:TextInput id="tfScale9Grid" width="200"/>
+				<mx:TextInput id="tfQuality" width="200"/>
+				<mx:TextInput id="tfCorePoint" width="200"/>
+				<mx:TextInput id="tfSliceRows" width="200"/>
+				<mx:TextInput id="tfSliceCols" width="200"/>
+			</s:VGroup>
+		</s:BorderContainer>
+		<s:BorderContainer>
+			<s:layout>
+				<s:HorizontalLayout horizontalAlign="center" paddingLeft="5" paddingRight="5" paddingTop="5" paddingBottom="5" />
+			</s:layout>
+			<mx:Button label="确定" id="btOK" name="btOK" click="onButtonClick(event)"/>
+			<mx:Button label="取消" id="btCancel" name="btCancel" click="onButtonClick(event)"/>
+		</s:BorderContainer>
+	</s:BorderContainer>
+</e:Dialog>

@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:NavigatorContent xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 label="素材管理器" xmlns:panel="canoe.studio.panel.*"
+		 >
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.fileSystemClasses.FileSystemControlHelper;
+			import mx.controls.treeClasses.TreeItemRenderer;
+			import mx.core.DragSource;
+			import mx.core.UIComponent;
+			import mx.events.DragEvent;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.managers.DragManager;
+			
+			import canoe.managers.AssetManager;
+			import canoe.studio.editor.AssetEditor;
+			import canoe.studio.entity.AssetPack;
+			import canoe.studio.entity.Project;
+			import canoe.util.Singleton;
+			
+			
+			[Bindable]
+			private var assetPacks:Array;
+			
+			[Bindable]
+			private var packDirectory:File;
+			
+			[Embed(source="icons/ImageEmbed.png")]
+			private var imgIcon : Class;
+			
+			private var oldIconFunction : Function;
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				oldIconFunction = packTree.iconFunction;
+				packTree.iconFunction = iconFunction;
+
+				var packs : Array = [];
+				
+				var assetFile : File = new File(Project.currProject.assetPath);
+				var queue : Array = [assetFile];
+				
+				while(queue.length > 0) {
+					var file : File = queue.pop();
+					var subDirs : Array = file.getDirectoryListing();
+					for each(var subDir : File in subDirs){
+						if(!subDir.isDirectory)
+							continue;
+						
+						var names : Array = subDir.name.split(".");
+						if(names[names.length - 1] == "swf" && (names.length == 2 || names.length == 3))
+						{
+							if((names.length == 2 && !file.resolvePath(names[0] + "." + Project.currProject.locale + ".swf").exists)
+								|| names.length == 3 && names[1] == Project.currProject.locale)
+							{
+								var ap : AssetPack = new AssetPack();
+								ap.dir = subDir;
+								ap.name = names[0];
+								packs.unshift(ap);
+							}
+						}
+						else{
+							queue.push(subDir);
+						}
+					}
+				}
+
+				assetPacks = packs;
+			}
+			
+			protected function itemDoubleClickHandler(event:ListEvent):void
+			{
+				var arr:Array=this.getSelectedAssetURI().split("#");
+				var assetEditor : AssetEditor = Singleton.getInstance(AssetEditor);
+				assetEditor.open();
+				assetEditor.init(AssetManager.getAssetLoader(arr[0]).getSymbolMeta(arr[1]));
+			}
+			
+			private var helper : FileSystemControlHelper;
+			
+			private function iconFunction(item : Object) : Class
+			{
+				if(item.isDirectory)
+				{
+					return oldIconFunction(item);
+				}
+				return imgIcon;
+			}
+			
+			protected function packTree_dragStartHandler(event:DragEvent):void
+			{
+				event.preventDefault();
+				if(File(packTree.selectedItem).isDirectory) return;
+
+				var assetURI : String = getSelectedAssetURI();
+
+				var dragSource : DragSource = new DragSource();
+				dragSource.addData(assetURI, "asset");
+				DragManager.doDrag(event.dragInitiator, dragSource, event, new UIComponent());
+			}
+			
+			private function getSelectedAssetURI() : String
+			{
+				var pack : AssetPack = AssetPack(packList.selectedItem);
+				var symbolName : String = pack.dir.getRelativePath(File(packTree.selectedItem)).replace("/", ".").slice(0, -4);
+				
+				return pack.name + "#" + symbolName;
+			}
+			
+			protected function packTree_changedHandler(event:ListEvent):void
+			{
+				if(File(packTree.selectedItem).isDirectory) return;
+				previewer.uri = getSelectedAssetURI();
+			}
+			
+			protected function packTree_contextMenuHandler(event:MouseEvent):void
+			{
+				var tmp : DisplayObject = event.target as DisplayObject;
+				while(packTree.contains(tmp))
+				{
+					if(tmp is TreeItemRenderer)
+					{
+						packTree.selectedItem = TreeItemRenderer(tmp).data;
+						break;
+					}
+					
+					tmp = tmp.parent;
+				}				
+			}
+		]]>
+	</fx:Script>
+	<s:layout>
+		<s:VerticalLayout horizontalAlign="center" paddingLeft="5" paddingRight="5" paddingTop="5" paddingBottom="5" />
+	</s:layout>
+	<s:DropDownList id="packList" requireSelection="true" width="100%">
+		<s:ArrayCollection source="{assetPacks}" />
+	</s:DropDownList>
+	<s:BorderContainer width="100%" height="100">
+		<panel:AssetPreviewer id="previewer" verticalCenter="0" horizontalCenter="0" />
+	</s:BorderContainer>
+	<mx:FileSystemTree id="packTree" width="100%" height="100%"
+					   directory="{AssetPack(packList.selectedItem).dir}"
+					   horizontalScrollPolicy="on" creationComplete="creationCompleteHandler(event)" change="packTree_changedHandler(event)" itemDoubleClick="itemDoubleClickHandler(event)"
+					   showExtensions="false" verticalScrollPolicy="on" dragEnabled="true" dragStart="packTree_dragStartHandler(event)" contextMenu="packTree_contextMenuHandler(event)">
+		<mx:flexContextMenu>
+			<mx:FlexNativeMenu labelField="@label">
+				<mx:dataProvider>
+					<fx:XMLList>
+						<item label="编辑" />
+						<item label="复制" />
+						<item label="粘贴" enabled="false" />
+						<item label="删除" />
+						<item label="移动" />
+						<item label="重命名" />
+					</fx:XMLList>
+				</mx:dataProvider>
+			</mx:FlexNativeMenu>
+		</mx:flexContextMenu>
+		<mx:extensions>
+			<fx:Array>
+				<fx:String>.png</fx:String>
+				<fx:String>.jpg</fx:String>
+				<fx:String>.jpeg</fx:String>
+				<fx:String>.gif</fx:String>
+			</fx:Array>
+		</mx:extensions>
+	</mx:FileSystemTree>
+</s:NavigatorContent>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extensions:Dialog xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				   xmlns:s="library://ns.adobe.com/flex/spark" 
+				   xmlns:mx="library://ns.adobe.com/flex/mx"
+				   xmlns:extensions="canoe.studio.extensions.*"
+				   width="400" height="200" title="新建组件">
+	<fx:Script>
+		<![CDATA[
+			import nochump.util.zip.ZipEntry;
+			import nochump.util.zip.ZipFile;
+			protected function browseButton_clickHandler(event:MouseEvent):void
+			{
+				var projFile : File = new File();
+				projFile.addEventListener(Event.SELECT, projectFile_selectHandler);
+				projFile.browseForDirectory("选择项目位置");
+			}
+			
+			private function createProj():void
+			{
+			}
+			
+			protected function projectFile_selectHandler(event:Event):void
+			{
+				var projFile : File = event.currentTarget as File;
+				projFile.removeEventListener(Event.SELECT, projectFile_selectHandler);
+				
+				var stream : FileStream = new FileStream();
+				stream.open(File.applicationDirectory.resolvePath("template.zip"), FileMode.READ);
+				var template : ZipFile = new ZipFile(stream);
+				var entries : Array = template.entries;
+				
+				for each(var entry : ZipEntry in entries)
+				{
+					
+				}
+			}
+		]]>
+	</fx:Script>
+	<extensions:layout>
+		<s:VerticalLayout paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10" horizontalAlign="center" />
+	</extensions:layout>
+	<s:HGroup width="100%">
+		<s:Label text="项目名称:" width="50" /> <s:TextInput id="nameInput" width="200" />
+	</s:HGroup>
+	<s:HGroup width="100%">
+		<s:Label text="目录:" width="50" /> <s:TextInput id="dirInput" width="200"/> <s:Button id="browseButton" label="浏览" click="browseButton_clickHandler(event)" />
+	</s:HGroup>
+	<s:HGroup>
+		<s:Button label="确定" click="createProj()" />
+		<s:Button label="取消" click="close()" />
+	</s:HGroup>
+</extensions:Dialog>

@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:NavigatorContent xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:editor="canoe.studio.editor.*"
+					width="100%" height="100%" creationComplete="updateLabel(event)" preinitialize="preinitializeHandler(event)">
+	<s:layout>
+		<s:VerticalLayout gap="1" />
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import mx.core.Container;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.events.IndexChangedEvent;
+			
+			import spark.events.IndexChangeEvent;
+			
+			import canoe.studio.entity.Project;
+			import canoe.studio.panel.Console;
+			import canoe.studio.panel.OutlinePanel;
+			import canoe.studio.util.FileUtil;
+
+			private var _uiFile : File;
+			[Bindable]
+			private var text : String;
+
+			[Bindable]
+			public function get uiFile():File
+			{
+				return _uiFile;
+			}
+			public function set uiFile(value:File):void
+			{
+				_uiFile = value;
+				if(value)
+				{
+					text = FileUtil.readFileContent(uiFile);
+				}
+				else
+				{
+					text = "";
+				}
+			}
+			
+			private function get currentText() : String
+			{
+				if(viewStack.selectedIndex == 0)
+				{
+					return xmlEditor.text;
+				}
+				else
+				{
+					return designer.xml.toXMLString().replace(/\n/g, "\r"); 
+				}
+			}
+			
+			public function isEdit():void
+			{
+				
+			}
+			
+			public function save() : void
+			{
+				if(dirty)
+				{
+					FileUtil.writeFileContent(uiFile, currentText);
+					text = currentText;
+					updateLabel();
+					Project.currProject.compileCXML();
+				}
+			}
+			
+			public function close(callback : Function = null) : void
+			{
+				if(dirty)
+				{
+					Alert.show("您已经修改了" + uiFile.name + ", 要保存修改吗？", "保存资源", Alert.YES|Alert.NO|Alert.CANCEL, null, 
+						function(event : CloseEvent) : void
+						{
+							if(event.detail != Alert.CANCEL)
+							{
+								if(event.detail == Alert.YES)
+								{
+									save();
+								}
+								
+								doClose(callback);
+							}
+						}
+					);
+				}
+				else
+				{
+					doClose(callback);
+				}
+			}
+			
+			private function doClose(callback : Function) : void
+			{
+				Container(parent).removeElement(this);
+
+				if(callback != null)
+				{
+					callback();
+				}
+			}
+			
+			public function get dirty() : Boolean
+			{
+				return currentText != text;
+			}
+			
+			protected function viewStack_changeHandler(event:IndexChangedEvent):void
+			{
+				if(viewStack.selectedIndex == 0)
+				{
+					if(designer.xml)
+					{
+						xmlEditor.text = designer.xml.toXMLString();
+					}
+				}
+				else
+				{
+					designer.dispose();
+
+					try
+					{
+						designer.xml = XML(xmlEditor.text);
+					}
+					catch(e : Error)
+					{
+						designer.xml = null;
+						Console.instance.error(e.message);
+						tabbar.selectedIndex = 0;
+						viewStack.selectedIndex = 0;
+					}
+				}
+				
+				OutlinePanel.instance.rootDnRContrller = rootDnRController;
+			}
+			
+			protected function tabbar_changeHandler(event:IndexChangeEvent):void
+			{
+				if(tabbar.selectedIndex == 0)
+				{
+					viewStack.selectedIndex = 0;
+				}
+				else
+				{
+					viewStack.selectedIndex = 1;
+				}
+			}
+			
+			public function get rootDnRController() : DnRController
+			{
+				return viewStack.selectedIndex == 1 ? designer.rootDnRController : null;
+			}
+			
+			protected function updateLabel(event : Event = null):void
+			{
+				var newLabel : String = uiFile.name;
+				if(dirty)
+				{
+					newLabel = "*" + newLabel;
+				}
+				
+				label = newLabel;
+			}
+			
+			protected function preinitializeHandler(event:FlexEvent):void
+			{
+				addEventListener(EditorEvent.UPDATE, updateLabel);
+			}
+		]]>
+	</fx:Script>
+	<s:ButtonBar id="tabbar" requireSelection="true" change="tabbar_changeHandler(event)">
+		<s:dataProvider>
+			<s:ArrayCollection>
+				<fx:Array>
+					<fx:String>源代码</fx:String>
+					<fx:String>设计</fx:String>
+					<fx:String>预览</fx:String>
+				</fx:Array>
+			</s:ArrayCollection>
+		</s:dataProvider>
+	</s:ButtonBar>
+	<mx:ViewStack id="viewStack" width="100%" height="100%" contentBackgroundColor="#24232D" dropShadowVisible="false" borderColor="0xa1a1a1" borderAlpha="1" borderStyle="solid" change="viewStack_changeHandler(event)">
+		<mx:Canvas width="100%" height="100%">
+			<editor:UICoder id="xmlEditor" text="{text}" width="100%" height="100%"/>
+		</mx:Canvas>
+		<mx:Canvas width="100%" height="100%" backgroundColor="#a6a7a8">
+			<editor:UIDesigner id="designer" previewMode="{tabbar.selectedIndex == 2}" left="50" right="50" top="50" bottom="50" />
+		</mx:Canvas>
+	</mx:ViewStack>
+</s:NavigatorContent>

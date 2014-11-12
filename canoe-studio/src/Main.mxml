@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx"
+					   creationComplete="creationCompleteHandler(event)" xmlns:local="*" xmlns:editor="canoe.studio.editor.*"
+					   invoke="invokeHandler(event)" closing="closingHandler(event)" xmlns:panel="canoe.studio.panel.*"
+					   width="1024" height="768"
+					   >
+	<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/mx";
+		@namespace local "*";
+		@namespace editor "canoe.studio.editor.*";
+		
+		* {
+			fontSize: 12;
+			fontFamily: 微软雅黑,宋体
+		}
+	</fx:Style>
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			import mx.events.FlexNativeMenuEvent;
+			
+			import canoe.core.CanoeGlobals;
+			import canoe.cxml.CXMLTranslator;
+			import canoe.managers.AssetManager;
+			import canoe.managers.IPopUpManager;
+			import canoe.studio.entity.Config;
+			import canoe.studio.entity.Project;
+			import canoe.studio.extensions.FileAssetLoaderFactory;
+			import canoe.studio.extensions.FilteredAtProcessorFactory;
+			import canoe.studio.extensions.FilteredNodeFatory;
+			import canoe.studio.extensions.PopUpManagerImpl;
+			import canoe.studio.library.LibraryManager;
+			import canoe.studio.panel.CompCreationView;
+			import canoe.studio.panel.FindReplacer;
+			import canoe.studio.panel.ProjCreationView;
+			import canoe.util.Singleton;
+			
+			[Bindable]
+			private var srcDirectory : File;
+			private static var _instance : Main;
+			public static function get instance() : Main
+			{
+				return _instance;
+			}
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				XML.ignoreComments = false;
+				Config.load();
+				AssetManager.assetLoaderFactory = new FileAssetLoaderFactory();
+				CXMLTranslator.atProcessorFactory = FilteredAtProcessorFactory.instance;
+				CXMLTranslator.nodeFatory = new FilteredNodeFatory();
+				CanoeGlobals.root = Sprite(systemManager);
+				Singleton.registerInterface(IPopUpManager, new PopUpManagerImpl());
+				LibraryManager.instance.addEventListener(Event.COMPLETE, libraryManager_completeHandler);
+				
+				_instance = this;
+			}
+			
+			protected function libraryManager_completeHandler(event:Event):void
+			{
+				currentState = "normal";
+			}
+			
+			protected function menu_itemClickHandler(event:FlexNativeMenuEvent):void
+			{
+				var commandName : String = event.item.@command;
+				if(!commandName) return;
+				
+				var command : Function = this[commandName];
+				
+				if(command != null)
+				{
+					command();
+				}
+			}
+			
+			private function openProject() : void
+			{
+				var projectFile : File = new File();
+				projectFile.addEventListener(Event.SELECT, projectFile_selectHandler);
+				projectFile.browseForOpen("请选择项目文件", [new FileFilter("项目文件", "*.canoe")]);
+			}
+			
+			private function newProject() : void
+			{
+				var projCreationView : ProjCreationView = Singleton.getInstance(ProjCreationView);
+				projCreationView.open(true);
+			}
+			
+			private function saveFile() : void
+			{
+				nav.saveSelected();
+			}
+			
+			private function closeFile() : void
+			{
+				nav.closeSelected();	
+			}
+			
+			private function closeAllFile() : void
+			{
+				nav.closeAll(close);
+			}
+			
+			private function createComp() : void
+			{
+				var creationView : CompCreationView = Singleton.getInstance(CompCreationView);
+				creationView.open();
+			}
+			
+			private function find() : void
+			{
+				var findReplacer : FindReplacer = Singleton.getInstance(FindReplacer);
+				findReplacer.open();
+			}
+			
+			protected function projectFile_selectHandler(event:Event):void
+			{
+				loadProjectFile(File(event.currentTarget));
+			}
+			
+			protected function invokeHandler(event:InvokeEvent):void
+			{
+				if(event.arguments.length > 0)
+				{
+					loadProjectFile(new File(event.arguments[0]));
+				}
+			}
+			
+			private function loadProjectFile(projectFile : File) : void {
+				Project.load(projectFile);
+				srcDirectory = new File(Project.currProject.cxmlPath);
+			}
+			
+			private function mnemonicIndexFunction(item : XML) : int
+			{
+				var index : int = item.@label.indexOf("(");
+				if(index >= 0)
+				{
+					return index + 1;
+				}
+				else
+				{
+					return index;
+				}
+			}
+			
+			protected function closingHandler(event:Event):void
+			{
+				if(nav && nav.numElements)
+				{
+					nav.closeAll(close);
+					event.preventDefault();
+				}
+			}
+			
+			private function clean() : void
+			{
+				if(Project.currProject)
+				{
+					Project.currProject.clean();
+				}
+			}
+			
+			private function compileCXML() : void
+			{
+				if(Project.currProject)
+				{
+					Project.currProject.compileCXML();
+				}
+			}
+			
+			private function compileAssets() : void
+			{
+				if(Project.currProject)
+				{
+					Project.currProject.compileAssets();
+				}
+			}
+		]]>
+	</fx:Script>
+	<s:states>
+		<s:State name="empty" />
+		<s:State name="normal" />
+	</s:states>
+	<s:menu.empty>
+		<mx:FlexNativeMenu labelField="@label" itemClick="menu_itemClickHandler(event)" mnemonicIndexFunction="{mnemonicIndexFunction}" keyEquivalentField="@keyEquivalent" >
+			<mx:dataProvider>
+				<s:XMLListCollection>
+					<fx:XMLList>
+						<item label="文件(F)">
+							<item label="新建项目(O)" command="newProject"/>
+							<item label="打开项目(O)" command="openProject"/>
+						</item>
+					</fx:XMLList>
+				</s:XMLListCollection>
+			</mx:dataProvider>
+		</mx:FlexNativeMenu>
+	</s:menu.empty>
+	<s:menu.normal>
+			<mx:FlexNativeMenu labelField="@label" itemClick="menu_itemClickHandler(event)" mnemonicIndexFunction="{mnemonicIndexFunction}" keyEquivalentField="@keyEquivalent" >
+				<mx:dataProvider>
+					<s:XMLListCollection>
+						<fx:XMLList>
+							<item label="文件(F)">
+								<item label="打开项目(O)" command="openProject"/>
+								<item label="新建组件(N)" command="createComp"/>
+								<item type="separator" />
+								<item label="关闭(C)" command="closeFile" />
+								<item label="全部关闭" command="closeAllFile"/>
+								<item type="separator" />
+								<item label="保存(S)" command="saveFile" controlKey="true" keyEquivalent="s" />
+								<item type="separator" />
+								<item name="mExit" label="退出(X)" command="close" />
+							</item>
+							<item label="项目(P)">
+								<item label="清理" command="clean" />
+								<item label="编译CXML" command="compileCXML" />
+								<item label="打包素材" command="compileAssets" />
+							</item>
+							<item label="编辑(E)">
+								<item label="撤销" />
+								<item label="重做" />
+								<item type="separator" />
+								<item label="查找/替换" controlKey="true" keyEquivalent="f" command="find" />
+								<item label="首选项" />
+							</item>
+							<item label="帮助(H)">
+								<item label="关于(A)" />
+							</item>
+						</fx:XMLList>
+					</s:XMLListCollection>
+				</mx:dataProvider>
+			</mx:FlexNativeMenu>
+	</s:menu.normal>
+	<s:Group includeIn="normal" width="100%" height="100%">
+		<s:layout>
+			<s:HorizontalLayout paddingLeft="5" paddingRight="5" paddingBottom="5" paddingTop="5"/>
+		</s:layout>
+		<mx:Accordion width="200" height="100%">
+			<panel:ResourcePanel width="100%" height="100%" srcDirectory="{srcDirectory}" />
+			<panel:AssetPanel height="100%" width="100%" />
+			<panel:ComponentPanel width="100%" height="100%" />
+		</mx:Accordion>
+		<s:VGroup width="100%" height="100%">
+			<editor:UINavigator id="nav" paddingTop="1" width="100%" top="0" height="100%" />
+			<s:Panel title="控制台" width="100%" height="200" dropShadowVisible="false">
+				<panel:Console id="console" width="100%" height="100%" />
+			</s:Panel>
+		</s:VGroup>
+		<s:VGroup width="200" height="100%">
+			<mx:Accordion width="200" height="50%">
+				<s:NavigatorContent label="尺寸与布局" width="100%" height="100%" />
+				<s:NavigatorContent label="属性" width="100%" height="100%">
+					<panel:PropertiesPanel />
+				</s:NavigatorContent>
+				<s:NavigatorContent label="字体" width="100%" height="100%" />
+			</mx:Accordion>
+			<panel:OutlinePanel width="100%" height="50%" />
+		</s:VGroup>
+	</s:Group>
+</s:WindowedApplication>

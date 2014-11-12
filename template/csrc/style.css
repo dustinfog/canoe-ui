@@ -1,0 +1,22 @@
+* {
+	font-family: simsun;
+	font-size: 12;
+}
+
+window {
+	font-size: 40;
+	font-weight: bold;
+	color: #ff0000;
+}
+
+item_normal {
+	color: #000000;
+}
+
+item_hover {
+	color: #999999;
+}
+
+item_selected {
+	color: #ffffff;
+}
