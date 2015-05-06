@@ -285,7 +285,7 @@ class BitmapDataFuture
 			loader = new Loader();
 	        loader.contentLoaderInfo.addEventListener(Event.COMPLETE, completeHandler);
 			loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, completeHandler);
-			loader.load(new URLRequest(path));
+			loader.load(new URLRequest("file://" + path));
 		}
 		else
 		{

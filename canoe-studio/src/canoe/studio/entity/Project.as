@@ -178,7 +178,7 @@ package canoe.studio.entity
 		{
 			for each(var subXML : XML in projXML.styleSheets.styleSheet)
 			{
-				TextStyleManager.instance.load(new URLRequest(this.cxmlPath + File.separator + subXML["@file"]));
+				TextStyleManager.instance.load(new URLRequest("file://" + this.cxmlPath + File.separator + subXML["@file"]));
 			}
 		}
 		
